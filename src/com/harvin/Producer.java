@@ -12,12 +12,12 @@ public class Producer implements Runnable {
 
     @Override
     public void run() {
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 20; i++) {
             try {
-                System.out.println("Producerd: " + i);
                 sharedQueue.put(i);
             } catch (InterruptedException ex) {
-                System.out.println(Thread.currentThread().getName() + " throw a interrupexception.");
+                System.out.println(Thread.currentThread().getName() + " throw a interrupexception. ");
+                //do something.
             }
         }
     }

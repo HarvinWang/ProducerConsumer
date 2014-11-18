@@ -14,9 +14,10 @@ public class Consumer implements Runnable {
     public void run() {
         while (true) {
             try {
-                System.out.println("Consumed: " + sharedQueue.take());
+                sharedQueue.take();
             } catch (InterruptedException ex) {
                 System.out.println(Thread.currentThread().getName() + " throw a interrupexception.");
+                //do something.
             }
         }
     }
