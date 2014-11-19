@@ -14,7 +14,10 @@ public class Producer implements Runnable {
     public void run() {
         for (int i = 0; i < 20; i++) {
             try {
-                sharedQueue.put(i);
+                synchronized (this){
+                    System.out.println("Producer: "+i);
+                    sharedQueue.put(i);
+                }
             } catch (InterruptedException ex) {
                 System.out.println(Thread.currentThread().getName() + " throw a interrupexception. ");
                 //do something.
