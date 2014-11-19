@@ -10,6 +10,6 @@ public class ProducerConsumer {
 
         prodThread.start();
         consThread1.start();
-        //consThread2.start();
+        consThread2.start();
     }
 }

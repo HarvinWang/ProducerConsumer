@@ -1,17 +1,15 @@
 package com.harvin;
 
-import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Created by ehaibin on 11/18/2014.
+ * Created by Harvin.Wang on 11/18/2014.
  */
-public final class ProducerConsumerQueue<E>  {
+public final class ProducerConsumerQueue<E> {
     private final Lock lock = new ReentrantLock();
     private final Condition notEmpty = lock.newCondition();
     private final Condition notFull = lock.newCondition();
@@ -27,28 +25,25 @@ public final class ProducerConsumerQueue<E>  {
     public void put(E e) throws InterruptedException {
         try {
             lock.lock();
-            System.out.println("* The Producer "+Thread.currentThread().getName()+" tries to put ["+e+"] into the queue.");
 
-            if (list.size() == this.CAPACITY){
-                System.out.println("The queue is full. \n\tso, Producer "+Thread.currentThread().getName()+" is blocked.\n");
-                this.notFull.await();
-                System.out.println("the Producer "+Thread.currentThread().getName()+" resumes to work.\n");
-            }
+            do {
+                if (list.size() == this.CAPACITY) {
+                    System.out.println("Producer " + Thread.currentThread().getName() + " is blocked.");
+                    this.notFull.await();
+                    System.out.println("Producer " + Thread.currentThread().getName() + " resumes.");
+                } else {
+                    System.out.println("Producer " + Thread.currentThread().getName() + " put the element.");
+                    list.offer(e);
+                    this.notEmpty.signalAll();
+                    break;
+                }
+            } while (true);
 
-            if (list.size() == 0){
-//                System.out.println("When the queue is empty,maybe all the consumers have been blocked.\n\t" +
-//                        "so, the next step should resume the notEmpty, as result of waking up all the consumers.");
-                this.notEmpty.signalAll();
-            }
-
-
-            list.offer(e);
-
-
-            System.out.println("After the Producer:"+Thread.currentThread().getName());
+            System.out.println("After the Producer:" + Thread.currentThread().getName());
             showQueue();
 
         } finally {
+            //System.out.println("Producer "+Thread.currentThread().getName()+" unlock.");
             lock.unlock();
         }
     }
@@ -57,36 +52,38 @@ public final class ProducerConsumerQueue<E>  {
     public E take() throws InterruptedException {
         try {
             lock.lock();
-            System.out.println("* The Consumer "+Thread.currentThread().getName()+" tries to take element from the queue.");
 
-            if (list.size() == 0) {
-                System.out.println("The queue is empty. \n\tso, Consumer " + Thread.currentThread().getName() + " is blocked.\n");
-                this.notEmpty.await();
-                System.out.println("the Consumer "+Thread.currentThread().getName()+" resumes to work.\n");
-            }
+            E tmp;
+            do {
+                if (list.size() == 0) {
+                    System.out.println("Consumer " + Thread.currentThread().getName() + " is blocked.");
+                    this.notEmpty.await();
+                    System.out.println("Consumer " + Thread.currentThread().getName() + " resumes.");
+                } else {
+                    System.out.println("Consumer " + Thread.currentThread().getName() + " get the element.");
+                    tmp = list.poll();
+                    notFull.signalAll();
+                    break;
+                }
+            } while (true);
 
-            if (list.size() == this.CAPACITY){
-//                System.out.println("When the queue is full,maybe all the producers have been blocked.\n\t" +
-//                        "so, the next step should resume the notFull, as result of waking up all the producer.");
-                this.notFull.signalAll();
-            }
-
-            E tmp = list.poll();
-            System.out.println("After the Consumer:"+Thread.currentThread().getName());
+            System.out.println("After the Consumer:" + Thread.currentThread().getName());
             showQueue();
             return tmp;
 
         } finally {
+            //System.out.println("Consumer "+Thread.currentThread().getName()+" unlock.");
             lock.unlock();
+            //to make the consumer process more clear, you can cancel the comment of the follow line.
+            //Thread.sleep(5);
         }
     }
 
 
-    private void showQueue(){
-        System.out.println("The queue now is :");
-        Iterator it = list.iterator();
-        while (it.hasNext())
-            System.out.print("    "+it.next());
+    private void showQueue() {
+        System.out.print("\tThe queue now is :");
+        for (E e : list)
+            System.out.print("    " + e);
         System.out.println("\n");
     }
 }
